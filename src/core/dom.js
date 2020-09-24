@@ -5,6 +5,10 @@ export class Dom {
         : this.$el = selector;
   }
 
+  static isDom($el) {
+    return $el instanceof Dom;
+  }
+
   closest(selector) {
     const el = this.$el.closest(selector)
     return el ? $(el) : null;
@@ -52,13 +56,30 @@ export class Dom {
   }
 
   findAll(selector) {
-    return this.$el.querySelectorAll(selector);
+    return Array.from(this.$el
+        .querySelectorAll(selector))
+        .map($);
   }
 
   find(selector) {
     const el = this.$el.querySelector(selector);
 
     return el ? $(el) : null;
+  }
+
+  addClass(className) {
+    this.$el.classList.add(className);
+    return this;
+  }
+
+  removeClass(className) {
+    this.$el.classList.remove(className);
+    return this;
+  }
+
+  toggleClass(className) {
+    this.$el.classList.toggle(className);
+    return this;
   }
 }
 

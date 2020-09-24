@@ -3,19 +3,27 @@ const CODES = {
   Z: 90,
 }
 
-const applyMiddlewares = middlewares => (el, id) => middlewares
-    .reduce((res, middleFn) => {
-      return middleFn(res, id);
-    }, el);
+const applyMiddlewares = (middlewares, additionalData) =>
+  (el, id) => middlewares
+      .reduce((res, middleFn) => {
+        return middleFn(res, id, additionalData);
+      }, el);
 
-const formTemplateFromArray = (count, middlewares) => new Array(count)
-    .fill('')
-    .map(applyMiddlewares(middlewares))
-    .join('');
+const formTemplateFromArray = (count, middlewares, additionalData = {}) =>
+  new Array(count)
+      .fill('')
+      .map(applyMiddlewares(middlewares, additionalData))
+      .join('');
 
-function toCell(data = '', id) {
+function toCell(data = '', col, {rowId}) {
   return `
-    <div class="cell" contenteditable data-col=${id}>${data}</div>
+    <div 
+      class="cell" 
+      contenteditable 
+      data-type="cell"
+      data-col=${col}
+      data-id=${rowId}:${col}
+    >${data}</div>
   `;
 }
 
@@ -35,25 +43,26 @@ function toChar(_, index) {
   return String.fromCharCode(CODES.A + index);
 }
 
-function createRow(rowInfo, content) {
-  const resizer = rowInfo
+function createRow(data, id) {
+  const resizer = typeof id === 'number'
       ? `<div class="row-resize" data-resize="row"></div>`
       : '';
 
   return `
     <div class="row" data-type="resizable">
       <div class="row-info">
-        ${rowInfo || ''}
+        ${typeof id === 'number' ? id + 1 : ''}
         ${resizer}
       </div>
-      <div class="row-data">${content}</div>
+      <div class="row-data">${data}</div>
     </div>
   `;
 }
 
-const toRow = data => (el, id) => {
-  const rowInfo = id + 1;
-  return createRow(rowInfo, data);
+const formColsTemplate = (data, id) => {
+  const colsCount = CODES.Z - CODES.A + 1;
+
+  return formTemplateFromArray(colsCount, [toCell], {rowId: id});
 }
 
 export function createTable(rowsCount = 15) {
@@ -61,11 +70,12 @@ export function createTable(rowsCount = 15) {
 
   const infoCols = formTemplateFromArray(colsCount, [toChar, toInfoCol]);
 
-  const infoRows = [createRow(null, infoCols)];
+  const infoRows = [createRow(infoCols, null)];
 
-  const cols = formTemplateFromArray(colsCount, [toCell]);
-
-  const rows = formTemplateFromArray(rowsCount, [toRow(cols)]);
+  const rows = formTemplateFromArray(
+      rowsCount,
+      [formColsTemplate, createRow]
+  );
 
   return [infoRows, rows].join('');
 }

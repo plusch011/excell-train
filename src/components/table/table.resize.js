@@ -22,12 +22,14 @@ export function resizeHandler($root, event) {
       zIndex: 10,
     })
     value = coords[initial] + delta + 4;
+
+    if (value <= 20) value = 20;
   }
 
   document.onmouseup = () => {
     if (isCol) {
       $root.findAll(`[data-col="${$resizable.data.col}"]`)
-          .forEach(col => col.style[initial] = value + 'px');
+          .forEach($col => $col.css({[initial]: value + 'px'}));
     } else {
       $resizable.css({[initial]: value + 'px'})
     }
