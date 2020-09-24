@@ -6,7 +6,7 @@ export class ExcelComponent extends DOMListener {
 
     this.name = options.name || ''
   }
-  // Возвращает шаблон компонента
+
   toHTML() {
     return '<div>Component</div>';
   }
