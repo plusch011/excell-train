@@ -13,15 +13,21 @@ const formTemplateFromArray = (count, middlewares) => new Array(count)
     .map(applyMiddlewares(middlewares))
     .join('');
 
-function toCell(data = '') {
+function toCell(data = '', id) {
   return `
-    <div class="cell" contenteditable>${data}</div>
+    <div class="cell" contenteditable data-col=${id}>${data}</div>
   `;
 }
 
-function toCol(data = '') {
+function toInfoCol(data = '', index) {
+  const resizer = data
+      ? `<div class="col-resize" data-resize="col"></div>`
+      : '';
   return `
-    <div class="column">${data}</div>
+    <div class="column" data-type="resizable" data-col=${index}>
+      ${data}
+      ${resizer}
+    </div>
   `;
 }
 
@@ -30,9 +36,16 @@ function toChar(_, index) {
 }
 
 function createRow(rowInfo, content) {
+  const resizer = rowInfo
+      ? `<div class="row-resize" data-resize="row"></div>`
+      : '';
+
   return `
-    <div class="row">
-      <div class="row-info">${rowInfo || ''}</div>
+    <div class="row" data-type="resizable">
+      <div class="row-info">
+        ${rowInfo || ''}
+        ${resizer}
+      </div>
       <div class="row-data">${content}</div>
     </div>
   `;
@@ -46,13 +59,13 @@ const toRow = data => (el, id) => {
 export function createTable(rowsCount = 15) {
   const colsCount = CODES.Z - CODES.A + 1;
 
-  const infoCols = formTemplateFromArray(colsCount, [toChar, toCol]);
+  const infoCols = formTemplateFromArray(colsCount, [toChar, toInfoCol]);
+
+  const infoRows = [createRow(null, infoCols)];
 
   const cols = formTemplateFromArray(colsCount, [toCell]);
 
   const rows = formTemplateFromArray(rowsCount, [toRow(cols)]);
-
-  const infoRows = [createRow(null, infoCols)];
 
   return [infoRows, rows].join('');
 }

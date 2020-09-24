@@ -18,6 +18,8 @@
   }
 
   .row-info {
+    user-select: none;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,6 +28,16 @@
     border: 1px solid $border-color;
     background: $table-info-cell-color;
     border-top: none;
+
+    &:hover {
+      .col-resize,
+      .row-resize {
+        opacity: 0.4;
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
   }
 
   .row-data {
@@ -34,6 +46,7 @@
   }
 
   .column {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -44,6 +57,17 @@
     border: 1px solid $border-color;
     border-top: none;
     border-left: none;
+    user-select: none;
+
+    &:hover {
+      .col-resize,
+      .row-resize {
+        opacity: 0.4;
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
   }
 
   .cell {
@@ -60,8 +84,61 @@
 
     &.selected {
       border: none;
-      outline: 2px solid #3c74ff;
+      outline: 2px solid $primary-color;
       z-index: 2;
+    }
+  }
+
+  .col-resize,
+  .row-resize {
+    opacity: 0;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: $primary-color;
+
+    &::before {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+      background: $primary-color;
+      opacity: 0.4;
+    }
+  }
+
+  .col-resize {
+    top: 0;
+    width: 4px;
+
+    &:hover {
+      cursor: col-resize;
+    }
+
+    &:active {
+      &::before {
+        top: 0;
+        bottom: -5000px;
+        width: 2px;
+      }
+    }
+  }
+
+  .row-resize {
+    left: 0;
+    height: 4px;
+
+    &:hover {
+      cursor: row-resize;
+    }
+
+    &:active {
+      &::before {
+        left: 0;
+        right: -5000px;
+        height: 2px;
+      }
     }
   }
 }
