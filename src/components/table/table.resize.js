@@ -1,48 +1,64 @@
 import {$} from '@core/dom';
 
 export function resizeHandler($root, event) {
-  let value;
-  const $resizer = $(event.target);
-  const isCol = $resizer.data.resize === 'col';
+  return new Promise(resolve => {
+    let value;
+    const $resizer = $(event.target);
+    const isCol = $resizer.data.resize === 'col';
 
-  const initial = isCol ? 'width' : 'height';
-  const edge = isCol ? 'right' : 'bottom';
-  const mouseDimension = isCol ? 'pageX' : 'pageY';
+    const initial = isCol ? 'width' : 'height';
+    const edge = isCol ? 'right' : 'bottom';
+    const mouseDimension = isCol ? 'pageX' : 'pageY';
 
-  const $resizable = $resizer.closest('[data-type="resizable"]');
-  const coords = $resizable.getCoords();
-  $resizer.css({opacity: 1});
+    const $resizable = $resizer.closest('[data-type="resizable"]');
+    const coords = $resizable.getCoords();
+    $resizer.css({opacity: 1});
 
-  document.body.style.cursor = isCol ? 'col-resize' : 'row-resize';
+    document.body.style.cursor = isCol ? 'col-resize' : 'row-resize';
 
-  document.onmousemove = e => {
-    const delta = e[mouseDimension] - coords[edge];
-    $resizer.css({
-      [edge]: (- delta - 4) + 'px',
-      zIndex: 10,
-    })
-    value = coords[initial] + delta + 4;
+    document.onmousemove = e => {
+      const delta = e[mouseDimension] - coords[edge];
+      $resizer.css({
+        [edge]: (- delta - 4) + 'px',
+        zIndex: 10,
+      })
+      value = coords[initial] + delta + 4;
 
-    if (value <= 20) value = 20;
-  }
-
-  document.onmouseup = () => {
-    if (isCol) {
-      $root.findAll(`[data-col="${$resizable.data.col}"]`)
-          .forEach($col => $col.css({[initial]: value + 'px'}));
-    } else {
-      $resizable.css({[initial]: value + 'px'})
+      if (value <= 20) value = 20;
     }
 
-    $resizer.css({
-      opacity: '',
-      [edge]: '',
-      zIndex: '',
-    })
+    document.onmouseup = () => {
+      if (isCol) {
+        $root.findAll(`[data-col="${$resizable.data.col}"]`)
+            .forEach($col => $col.css({[initial]: value + 'px'}));
 
-    document.body.style.cursor = '';
-    document.onmousemove = null;
+        resolve({
+          col: true,
+          value,
+          id: +$resizable.data.col,
+        })
 
-    document.onmouseup = null;
-  }
+      } else {
+        $resizable.css({[initial]: value + 'px'});
+
+        resolve({
+          row: true,
+          value,
+          id: +$resizable.data.row,
+        })
+
+      }
+
+      $resizer.css({
+        opacity: '',
+        [edge]: '',
+        zIndex: '',
+      })
+
+      document.body.style.cursor = '';
+      document.onmousemove = null;
+
+      document.onmouseup = null;
+    }
+  });
 }

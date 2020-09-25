@@ -7,3 +7,10 @@ export const capitalize = str => {
       .map(substr => substr.charAt(0).toUpperCase() + substr.slice(1))
       .join(' ');
 };
+
+export function storage(key, data) {
+  if (!data)
+    return JSON.parse(localStorage.getItem(key));
+
+  localStorage.setItem(key, JSON.stringify(data));
+}
