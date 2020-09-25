@@ -10,3 +10,5 @@ const excel = new Excel('#app', {
 });
 
 excel.render();
+
+window.onunload = () => excel.destroy();

@@ -5,6 +5,10 @@ export class Dom {
         : this.$el = selector;
   }
 
+  static isDom($el) {
+    return $el instanceof Dom;
+  }
+
   closest(selector) {
     const el = this.$el.closest(selector)
     return el ? $(el) : null;
@@ -12,6 +16,15 @@ export class Dom {
 
   get data() {
     return this.$el.dataset;
+  }
+
+  static parseId(id) {
+    id = id.split(':');
+    return {row: +id[0], col: +id[1]};
+  }
+
+  id(parse) {
+    return parse ? Dom.parseId(this.data.id) : this.data.id;
   }
 
   getCoords() {
@@ -24,6 +37,19 @@ export class Dom {
       return this;
     }
     return this.$el.outerHTML.trim();
+  }
+
+  text(text) {
+    if (typeof text === 'string') {
+      this.$el.textContent = text;
+      return this;
+    }
+
+    if (this.$el.tagName.toLowerCase() == 'input') {
+      return this.$el.value.trim();
+    }
+
+    return this.$el.textContent.trim();
   }
 
   css(styles = {}) {
@@ -52,13 +78,34 @@ export class Dom {
   }
 
   findAll(selector) {
-    return this.$el.querySelectorAll(selector);
+    return Array.from(this.$el
+        .querySelectorAll(selector))
+        .map($);
   }
 
   find(selector) {
     const el = this.$el.querySelector(selector);
 
     return el ? $(el) : null;
+  }
+
+  addClass(className) {
+    this.$el.classList.add(className);
+    return this;
+  }
+
+  removeClass(className) {
+    this.$el.classList.remove(className);
+    return this;
+  }
+
+  toggleClass(className) {
+    this.$el.classList.toggle(className);
+    return this;
+  }
+
+  focus() {
+    this.$el.focus();
   }
 }
 
