@@ -1,20 +1,33 @@
 import {ExcelComponent} from '@core/ExcelComponent';
-import {createTable} from '@/components/table/table.template';
-import {resizeHandler} from '@/components/table/table.resize';
-import {shouldResize, shouldSelect} from '@/components/table/table.functions';
+import {createTable} from './table.template';
+import {resizeHandler} from './table.resize';
+import {
+  getNextSelector,
+  idMatrix,
+  shouldResize,
+  shouldSelect
+} from './table.functions';
 import {$} from '@core/dom';
-import {TableSelection} from '@/components/table/TableSelection';
+import {TableSelection} from './TableSelection';
 
 export class Table extends ExcelComponent {
   static className = 'excel__table';
-  constructor($root) {
+
+  constructor($root, options) {
     super($root, {
-      listeners: ['mousedown'],
+      name: 'Table',
+      listeners: ['mousedown', 'keydown', 'input'],
+      ...options,
     });
   }
 
   prepare() {
-    this.selection = new TableSelection();
+    this.selection = new TableSelection(this.emitter);
+  }
+
+  selectCell($cell) {
+    this.selection.select($cell);
+    this.$emit('table:select', $cell);
   }
 
   onMousedown(e) {
@@ -26,35 +39,56 @@ export class Table extends ExcelComponent {
 
     if (shouldSelect(e)) {
       if (!this.selection.group.length)
-        return this.selection.select($target);
-      if (e.ctrlKey)
-        return this.selection.add($target);
+        return this.selectCell($target);
 
       if (e.shiftKey) {
-        const $first = this.selection.group[0];
-        const firstId = $first.data.id;
-        const targetId = $target.data.id;
+        const selection = idMatrix(this.selection.current, $target)
+            .map(id => this.$root.find(`[data-id="${id}"]`));
 
-        const cells = this.$root
-            .findAll('[data-id]')
-            .filter($cell => TableSelection
-                .isIdInRange($cell.data.id, firstId, targetId));
-
-        return this.selection.select(cells);
+        return this.selection.selectGroup(selection);
       }
 
       this.selection.select($target);
     }
   }
 
+  onKeydown(e) {
+    const {key} = e;
+    const keys = [
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowDown',
+      'ArrowUp',
+      'Enter',
+      'Tab',
+    ];
+
+    if (keys.includes(key)) {
+      const selector = getNextSelector(e, this.selection.current);
+      const $target = this.$root.find(selector);
+      this.selectCell($target);
+    }
+  }
+
+  onInput(e) {
+    console.log(e);
+    this.$emit('table:input', $(e.target));
+  }
+
   init() {
     super.init();
 
     const $cell = this.$root.find('[data-id="0:0"]');
-    this.selection.select($cell);
+    this.selectCell($cell);
+
+    this.$on('formula:input', text => this.selection.current.text(text));
+    this.$on('formula:done', () => {
+      this.selection.current.focus()
+    });
   }
 
   toHTML() {
     return createTable(40);
   }
 }
+

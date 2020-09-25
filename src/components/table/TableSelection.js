@@ -3,8 +3,9 @@ import {Dom} from '@core/dom';
 export class TableSelection {
   static className = 'selected';
 
-  constructor() {
+  constructor(emitter) {
     this.group = [];
+    this.current = null;
   }
 
   static checkElement($el) {
@@ -24,60 +25,27 @@ export class TableSelection {
     return [$el];
   }
 
-  static parseId(id) {
-    return {row: id[0], col: id[2]};
+  focus() {
+    this.current.focus();
   }
-
-  static isIdInRange(id, from, to) {
-    from = TableSelection.parseId(from);
-    to = TableSelection.parseId(to);
-    id = TableSelection.parseId(id);
-
-    const [r1, r2] = [Math.min(from.row, to.row), Math.min(from.row, to.row)];
-    const [c1, c2] = [Math.min(from.col, to.col), Math.min(from.col, to.col)];
-
-    const inRow = id.row >= r1 && id.row <= r2;
-    const inCol = id.col >= c1 && id.col <= c2;
-    inRow & inCol && console.log('inRange')
-    return inRow & inCol;
-  }
-
-  selectFromTo(id1, id2) {
-
-  }
-
-  // toggle($el) {
-  //   const elements = TableSelection.toArray($el);
-  //
-  //   elements.forEach(elem => {
-  //     return this.group.includes(elem) ? this.remove(elem) : this.add(elem);
-  //   });
-  // }
-
 
   select($el) {
-    const elements = TableSelection.toArray($el);
-    elements.forEach(elem => elem.addClass(TableSelection.className));
     this.clear();
-    this.group = elements;
-
+    $el.addClass(TableSelection.className);
+    this.group = [$el];
+    this.current = $el;
+    this.focus();
   }
 
-  add($el) {
-    const elements = TableSelection.toArray($el);
+  selectGroup($elArr) {
+    const elements = TableSelection.toArray($elArr);
 
-    this.group = [...this.group, ...elements];
+    this.clear();
 
     elements.forEach(elem => elem.addClass('selected'));
-  }
 
-  // remove($el) {
-  //   TableSelection.checkElement($el);
-  //
-  //   this.group = this.group.filter(el => el.$el != $el.$el);
-  //
-  //   $el.removeClass('selected');
-  // }
+    this.group = elements;
+  }
 
   clear() {
     this.group.forEach($el => $el.removeClass(TableSelection.className));

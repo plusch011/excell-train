@@ -18,6 +18,15 @@ export class Dom {
     return this.$el.dataset;
   }
 
+  static parseId(id) {
+    id = id.split(':');
+    return {row: +id[0], col: +id[1]};
+  }
+
+  id(parse) {
+    return parse ? Dom.parseId(this.data.id) : this.data.id;
+  }
+
   getCoords() {
     return this.$el.getBoundingClientRect();
   }
@@ -28,6 +37,19 @@ export class Dom {
       return this;
     }
     return this.$el.outerHTML.trim();
+  }
+
+  text(text) {
+    if (typeof text === 'string') {
+      this.$el.textContent = text;
+      return this;
+    }
+
+    if (this.$el.tagName.toLowerCase() == 'input') {
+      return this.$el.value.trim();
+    }
+
+    return this.$el.textContent.trim();
   }
 
   css(styles = {}) {
@@ -80,6 +102,10 @@ export class Dom {
   toggleClass(className) {
     this.$el.classList.toggle(className);
     return this;
+  }
+
+  focus() {
+    this.$el.focus();
   }
 }
 
